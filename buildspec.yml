@@ -1,9 +1,3 @@
-
-      
-
-      
-
-
 version: 0.2
 
 phases:
@@ -12,12 +6,11 @@ phases:
       - echo "Installing system dependencies..."
       - apt-get update
       - apt-get install -y build-essential curl git libssl-dev zlib1g-dev libyaml-dev libpq-dev
-      - export API_URL=https://app.stage.invisirisk.com
-      - export APP_TOKEN=VUy33cC5lPhTYp_tkgd8N4txmsDznV9QqXX5z7QOs2OwqA_D_q6OzQln0CF56qa15g_aQVc2Kz36bHWShi_nZg
-      # - curl https://app.stage.invisirisk.com/pse/bitbucket-setup/pse_startup | bash
       -  # invisirisk startup script
-      - . <(curl -s "https://app.stage.invisirisk.com/pse/bitbucket-setup/pse_startup")
-      # - . /etc/profile.d/pse-proxy.sh
+      # - export API_URL=https://app.stage.invisirisk.com
+      # - export APP_TOKEN=VUy33cC5lPhTYp_tkgd8N4txmsDznV9QqXX5z7QOs2OwqA_D_q6OzQln0CF56qa15g_aQVc2Kz36bHWShi_nZg
+      - curl $API_URL/pse/bitbucket-setup/pse_startup | bash
+      - . /etc/profile.d/pse-proxy.sh
       - echo "Installing mise..."
       - curl https://mise.run | sh
       - export PATH="$HOME/.local/bin:$PATH"
