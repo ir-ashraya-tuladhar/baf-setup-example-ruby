@@ -1,0 +1,28 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo "Installing system dependencies..."
+      - apt-get update
+      - apt-get install -y build-essential curl git libssl-dev zlib1g-dev libyaml-dev libpq-dev
+
+      - echo "Installing mise..."
+      - curl https://mise.run | sh
+      - export PATH="$HOME/.local/bin:$PATH"
+      - echo "Installing Ruby via mise..."
+      - mise install
+      - ruby -v
+      - echo "Installing bundler..."
+      - gem install bundler
+
+  build:
+    commands:
+      - echo "Running bundle install..."
+      - bundle install --verbose
+
+  post_build:
+    commands:
+      - echo "Listing installed gems:"
+      - gem list
+
