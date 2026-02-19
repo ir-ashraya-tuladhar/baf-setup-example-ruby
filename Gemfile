@@ -1,44 +1,76 @@
 source "https://rubygems.org"
 
 # Web framework
-gem "rails"
+gem "sinatra"
+gem "puma"
+gem "rack"
+gem "rack-contrib"
+gem "rake"
+
+# HTTP clients
+gem "faraday"
+gem "faraday-retry"
+gem "httparty"
+gem "rest-client"
+gem "typhoeus"
 
 # Database
 gem "pg"
-gem "mysql2"
-
-# Background processing
-gem "sidekiq"
+gem "sequel"
+gem "activerecord"
+gem "connection_pool"
 gem "redis"
 
-# XML / HTML parsing (native extensions)
-gem "nokogiri"
+# Background jobs
+gem "sidekiq"
+gem "rufus-scheduler"
 
-# JSON + serialization
+# Serialization / Parsing
 gem "oj"
+gem "multi_json"
+gem "nokogiri"
+gem "json-schema"
+gem "csv"
 
-# Cryptography
+# Auth / Security
 gem "bcrypt"
-gem "ruby-jwt"
+gem "jwt"
+gem "omniauth"
+gem "rack-attack"
 
-# HTTP clients
-gem "httparty"
-gem "faraday"
-
-# AWS SDK (large dependency tree)
-gem "aws-sdk-s3"
-gem "aws-sdk-secretsmanager"
-
-# File processing
+# File / Storage
+gem "carrierwave"
 gem "mini_magick"
+gem "aws-sdk-s3"
 
-# Logging & monitoring
+# Templating
+gem "erb"
+gem "slim"
+gem "haml"
+
+# Testing
+gem "rspec"
+gem "faker"
+gem "factory_bot"
+gem "webmock"
+gem "vcr"
+gem "simplecov"
+
+# Logging / Monitoring
+gem "semantic_logger"
+gem "sentry-ruby"
+gem "newrelic_rpm"
 gem "lograge"
 
-# Testing framework (adds dev dependencies)
-group :development, :test do
-  gem "rspec"
-  gem "factory_bot"
-  gem "faker"
-end
-
+# Utilities
+gem "dotenv"
+gem "dry-validation"
+gem "dry-struct"
+gem "virtus"
+gem "hashie"
+gem "activesupport"
+gem "tzinfo"
+gem "chronic"
+gem "money"
+gem "phonelib"
+gem "countries"

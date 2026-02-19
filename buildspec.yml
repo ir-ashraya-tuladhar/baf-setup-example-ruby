@@ -22,7 +22,8 @@ phases:
   build:
     commands:
       - echo "Running bundle install..."
-      - bundle install --verbose
+      - bundle install
+      - bundel list
 
   post_build:
     commands:
