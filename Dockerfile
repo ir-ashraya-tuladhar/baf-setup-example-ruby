@@ -1,4 +1,4 @@
-FROM ruby:2.7.5 AS base
+FROM public.ecr.aws/docker/library/ruby:2.7.5 AS base
 
 # Set production environment
 ENV RAILS_ENV="production" \
