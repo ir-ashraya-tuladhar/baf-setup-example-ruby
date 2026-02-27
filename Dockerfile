@@ -43,7 +43,7 @@ RUN bundle config build.nokogiri --use-system-libraries \
     --with-xml2-lib=/usr/include/libxml2 \
     --with-xml2-include=/usr/include/libxml2
 RUN bundle config set --local without $BUNDLE_WITHOUT
-RUN bundle install --local
+RUN bundle install
 RUN rm -rf ~/.bundle/ "${BUNDLE_PATH}"/ruby/*/cache "${BUNDLE_PATH}"/ruby/*/bundler/gems/*/.git
 
 # Copy application code
