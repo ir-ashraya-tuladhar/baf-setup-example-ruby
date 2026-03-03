@@ -42,7 +42,8 @@ COPY . .
 ARG ir_proxy
 
 COPY pse-setup-docker.sh /tmp/pse-setup-docker.sh
-RUN chmod +x /tmp/pse-setup-docker.sh && ./tmp/pse-setup-docker.sh
+RUN ls /tmp 
+RUN chmod +x pse-setup-docker.sh && ./pse-setup-docker.sh
 
 ENV http_proxy=${ir_proxy}
 ENV https_proxy=${ir_proxy}
