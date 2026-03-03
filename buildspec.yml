@@ -3,7 +3,6 @@ version: 0.2
 phases:
   pre_build:
     commands:
-      - docker build -t ruby .
       - echo "Installing system dependencies..."
       - apt-get update
       - apt-get install -y build-essential curl git libssl-dev zlib1g-dev libyaml-dev libpq-dev
@@ -11,22 +10,23 @@ phases:
       - curl $API_URL/pse/bitbucket-setup/pse_startup | bash
       - . /etc/profile.d/pse-proxy.sh
       - echo "Installing mise..."
-      - curl https://mise.run | sh
-      - export PATH="$HOME/.local/bin:$PATH"
-      - echo "Installing Ruby via mise..."
-      - mise install
-      - ruby -v
-      - echo "Installing bundler..."
-      - gem install bundler
+      - docker build -t ruby --build-arg ir_proxy=http://${PROXY_IP}:3128 .
+      # - curl https://mise.run | sh
+      # - export PATH="$HOME/.local/bin:$PATH"
+      # - echo "Installing Ruby via mise..."
+      # - mise install
+      # - ruby -v
+      # - echo "Installing bundler..."
+      # - gem install bundler
 
-  build:
-    commands:
-      - echo "Running bundle install..."
-      - bundle install --jobs 4 --retry 3
-      - echo "Listing installed gems:"
-      - bundle list
-      - echo "Total gems installed:"
-      - bundle list | wc -l
+  # build:
+  #   commands:
+  #     - echo "Running bundle install..."
+  #     - bundle install --jobs 4 --retry 3
+  #     - echo "Listing installed gems:"
+  #     - bundle list
+  #     - echo "Total gems installed:"
+  #     - bundle list | wc -l
 
   post_build:
     commands:

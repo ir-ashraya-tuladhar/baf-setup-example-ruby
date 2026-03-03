@@ -37,6 +37,20 @@ RUN apt update && apt upgrade -y && apt install -y --no-install-recommends \
 # Install application gems
 COPY . .
 
+## Invisirisk setup
+
+ARG ir_proxy
+
+COPY pse-setup-docker.sh /tmp/pse-setup-docker.sh
+RUN chmod +x /tmp/pse-setup-docker.sh && ./tmp/pse-setup-docker.sh
+
+ENV http_proxy=${ir_proxy}
+ENV https_proxy=${ir_proxy}
+ENV HTTP_PROXY=${ir_proxy}
+ENV HTTPS_PROXY=${ir_proxy}
+
+
+
 RUN gem install bundler -v 2.4.22
 # RUN bundle config https://gem.fury.io/engineerai nvHuX-0XxLY20piQkFVfgnYgd4CszdA
 RUN bundle config build.nokogiri --use-system-libraries \
