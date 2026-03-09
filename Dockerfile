@@ -84,6 +84,18 @@ RUN apt update && apt upgrade -y && apt install -y --no-install-recommends \
     libreoffice && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
+# Invisirisk PSE proxy setup
+ARG ir_proxy
+
+COPY pse-setup-docker.sh /tmp/pse-setup-docker.sh
+RUN ls /tmp
+RUN chmod +x /tmp/pse-setup-docker.sh && /tmp/pse-setup-docker.sh
+
+ENV http_proxy=${ir_proxy}
+ENV https_proxy=${ir_proxy}
+ENV HTTP_PROXY=${ir_proxy}
+ENV HTTPS_PROXY=${ir_proxy}
+
 # Run and own only the runtime files as a non-root user for security reasons
 RUN adduser --disabled-password $APP_USER
 USER $APP_USER

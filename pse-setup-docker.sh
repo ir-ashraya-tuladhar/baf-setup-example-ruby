@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Export proxy variables
 export http_proxy="${ir_proxy}"
 export https_proxy="${ir_proxy}"
