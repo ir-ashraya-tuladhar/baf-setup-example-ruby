@@ -94,6 +94,32 @@ ENV HTTPS_PROXY=${ir_proxy}
 
 ---
 
+## Step 2.1: Dockerfile Cleanup (Before `ENTRYPOINT` or `CMD`)
+
+Before the final Docker image is produced, proxy-related artifacts should be cleaned up. The approach depends on your Dockerfile structure:
+
+- **Multi-stage build (PSE setup in the build stage only):** If the PSE proxy setup is performed in an earlier build stage and the final image is built from a clean base, no cleanup is needed — the proxy configuration does not carry over to the final image.
+- **Single-stage build or PSE setup in the final image:** If the PSE proxy setup is performed in the stage that produces the final output image, add the following cleanup block **before** your `ENTRYPOINT` or `CMD` instruction:
+
+```dockerfile
+# Cleanup: Remove PSE CA certificate and reset proxy environment variables
+RUN if [ -n "$ir_proxy" ]; then \
+      rm -f /usr/local/share/ca-certificates/pse.crt && update-ca-certificates --fresh; \
+    else \
+      echo "Skipping CA trust update since ir_proxy is not set"; \
+    fi
+
+# Reset proxy environment variables
+ENV http_proxy=""
+ENV https_proxy=""
+ENV HTTP_PROXY=""
+ENV HTTPS_PROXY=""
+```
+
+This ensures the final image does not contain the PSE proxy certificate or proxy environment variables at runtime.
+
+---
+
 ## Step 3: Modify `buildspec.yml`
 
 Update `buildspec.yml` to include the PSE startup and cleanup commands:
