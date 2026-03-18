@@ -1,4 +1,4 @@
-# Ruby Project — Invisirisk PSE Proxy Setup
+# Ruby Project — Invisirisk BAF Example Setup
 
 This guide details how to integrate the Invisirisk PSE (Proxy Security Engine) proxy into the Docker build and AWS CodeBuild pipeline.
 
