@@ -8,99 +8,33 @@ Ensure the `API_URL` and `APP_TOKEN` environment variable is set in your CodeBui
 
 ---
 
-## Step 1: Create `pse-setup-docker.sh`
+## Step 1: Modify `Dockerfile`
 
-Create a file named `pse-setup-docker.sh` in the root of the repository with the following content.This script will be used in the Dockerfile to download the CA certificate required for BAF and update the certificate store.:
-
-```bash
-#!/bin/bash
-
-# Export proxy variables
-export http_proxy="${ir_proxy}"
-export https_proxy="${ir_proxy}"
-export HTTP_PROXY="${ir_proxy}"
-export HTTPS_PROXY="${ir_proxy}"
-
-echo "Value of https_proxy: ${https_proxy}"
-
-# Download and install CA cert
-curl -L -k -s -o /tmp/pse.crt https://pse.invisirisk.com/ca
-
-if command -v apt-get >/dev/null 2>&1; then
-    cp /tmp/pse.crt /usr/local/share/ca-certificates/pse.crt
-    echo "CA certificate successfully retrieved and copied to /usr/local/share/ca-certificates/"
-elif command -v apk >/dev/null 2>&1; then
-    cp /tmp/pse.crt /usr/local/share/ca-certificates/pse.crt
-    echo "CA certificate successfully retrieved and copied to /usr/local/share/ca-certificates/"
-elif command -v dnf >/dev/null 2>&1 || command -v yum >/dev/null 2>&1; then
-    cp /tmp/pse.crt /etc/pki/ca-trust/source/anchors/pse.crt
-    echo "CA certificate successfully retrieved and copied to /etc/pki/ca-trust/source/anchors/"
-fi
-
-if command -v dnf >/dev/null 2>&1 || command -v yum >/dev/null 2>&1; then
-    update-ca-trust
-else
-    update-ca-certificates
-fi
-```
-
-Make the script executable:
-
-```bash
-chmod +x pse-setup-docker.sh
-```
-
----
-
-## Step 2: Modify `Dockerfile`
-
-In the **build stage** of the `Dockerfile` (the `FROM base` stage), add the following lines **after** the installation of the system packages (if required in your Dockerfile) `apt install` block:
+In the **build stage** of the `Dockerfile` (the `FROM base` stage), add the following lines **after** the installation of the **system packages** (if required in your Dockerfile) `apt install` block. The modification will allow the Dockerfile to download the CA certificate required for BAF and update the certificate store.:
 
 ```dockerfile
-# InvisiRisk BAF setup
+###################### InvisiRisk BAF setup start ################################
 ARG ir_proxy
 
-#Copy the previously created script, execute it, and set the required variables for BAF
-COPY pse-setup-docker.sh /tmp/pse-setup-docker.sh 
-RUN chmod +x /tmp/pse-setup-docker.sh && /tmp/pse-setup-docker.sh
+ENV http_proxy=${ir_proxy} \
+    https_proxy=${ir_proxy} \
+    HTTP_PROXY=${ir_proxy} \
+    HTTPS_PROXY=${ir_proxy}
 
-ENV http_proxy=${ir_proxy}
-ENV https_proxy=${ir_proxy}
-ENV HTTP_PROXY=${ir_proxy}
-ENV HTTPS_PROXY=${ir_proxy}
-```
-
-Example placement in the final stage:
-
-```dockerfile
-# Final stage for app image
-FROM base
-
-# Install packages needed for deployment
-RUN apt update && apt upgrade -y && apt install -y --no-install-recommends \
-    libxml2 \
-    ...
-    libreoffice --fix-missing && \
-    rm -rf /var/lib/apt/lists /var/cache/apt/archives
-
-###################### InvisiRisk BAF setup  <-- ADD BELOW HERE ################################
-ARG ir_proxy
-
-COPY pse-setup-docker.sh /tmp/pse-setup-docker.sh
-RUN chmod +x /tmp/pse-setup-docker.sh && /tmp/pse-setup-docker.sh
-
-ENV http_proxy=${ir_proxy}
-ENV https_proxy=${ir_proxy}
-ENV HTTP_PROXY=${ir_proxy}
-ENV HTTPS_PROXY=${ir_proxy}
-
-###################### Add your build commands below this line. ################################
+RUN if [ -n "${ir_proxy}" ]; then \
+      echo "Value of https_proxy: ${https_proxy}" && \
+      curl -L -k -s -o /tmp/pse.crt https://pse.invisirisk.com/ca && \
+      cp /tmp/pse.crt /usr/local/share/ca-certificates/pse.crt && \
+      echo "CA certificate successfully retrieved and copied to /usr/local/share/ca-certificates/" && \
+      update-ca-certificates; \
+    fi
+###################### InvisiRisk BAF setup end ################################
 
 ```
 
 ---
 
-## Step 2.1: Dockerfile Cleanup (Before `ENTRYPOINT` or `CMD`)
+## Step 1.1: Dockerfile Cleanup (Before `ENTRYPOINT` or `CMD`)
 
 Before the final Docker image is produced, proxy-related artifacts should be cleaned up. The approach depends on your Dockerfile structure:
 
@@ -108,7 +42,7 @@ Before the final Docker image is produced, proxy-related artifacts should be cle
 - **Single-stage build or BAF setup in the final image:** If the BAF setup is performed in the stage that produces the final output image, add the following cleanup block **before** your `ENTRYPOINT` or `CMD` instruction:
 
 ```dockerfile
-########################################### AT THE END FOR CLEAN UP BEFORE ENTRYPOINT OR CMD #########
+########################################### InvisiRisk Cleanup script start #########
 # Cleanup: Remove PSE CA certificate and reset proxy environment variables
 RUN if [ -n "$ir_proxy" ]; then \
       rm -f /usr/local/share/ca-certificates/pse.crt && update-ca-certificates --fresh; \
@@ -121,14 +55,72 @@ ENV http_proxy=""
 ENV https_proxy=""
 ENV HTTP_PROXY=""
 ENV HTTPS_PROXY=""
-########################################### Place your ENTRYPOINT OR CMD instructions after this line.########
+########################################### InvisiRisk Cleanup script end ########
 ```
 
 This ensures the final image does not contain the BAF certificate or proxy environment variables at runtime.
 
+## Your Dockerfile will something like this once setup
+
+```dockerfile
+FROM base
+
+# Install native dependencies
+RUN apt update && apt upgrade -y && apt install -y --no-install-recommends \
+    bash \
+    build-essential \
+    libxml2-dev \
+    libxslt-dev
+# Install application gems
+COPY . .
+
+###################### InvisiRisk BAF setup start ################################
+ARG ir_proxy
+
+ENV http_proxy=${ir_proxy} \
+    https_proxy=${ir_proxy} \
+    HTTP_PROXY=${ir_proxy} \
+    HTTPS_PROXY=${ir_proxy}
+
+RUN if [ -n "${ir_proxy}" ]; then \
+      echo "Value of https_proxy: ${https_proxy}" && \
+      curl -L -k -s -o /tmp/pse.crt https://pse.invisirisk.com/ca && \
+      cp /tmp/pse.crt /usr/local/share/ca-certificates/pse.crt && \
+      echo "CA certificate successfully retrieved and copied to /usr/local/share/ca-certificates/" && \
+      update-ca-certificates; \
+    fi
+###################### InvisiRisk BAF setup end ################################
+
+RUN gem install bundler -v 2.4.22
+# RUN bundle config https://gem.fury.io/engineerai nvHuX-0XxLY20piQkFVfgnYgd4CszdA
+RUN bundle config build.nokogiri --use-system-libraries \
+    --with-xml2-lib=/usr/include/libxml2 \
+    --with-xml2-include=/usr/include/libxml2
+RUN bundle config set --local without $BUNDLE_WITHOUT
+RUN bundle install
+RUN rm -rf ~/.bundle/ "${BUNDLE_PATH}"/ruby/*/cache "${BUNDLE_PATH}"/ruby/*/bundler/gems/*/.git
+
+########################################### InvisiRisk Cleanup script start #########
+# Cleanup: Remove PSE CA certificate and reset proxy environment variables
+RUN if [ -n "$ir_proxy" ]; then \
+      rm -f /usr/local/share/ca-certificates/pse.crt && update-ca-certificates --fresh; \
+    else \
+      echo "Skipping CA trust update since ir_proxy is not set"; \
+    fi
+
+# Reset proxy environment variables
+ENV http_proxy=""
+ENV https_proxy=""
+ENV HTTP_PROXY=""
+ENV HTTPS_PROXY=""
+########################################### InvisiRisk Cleanup script end ########
+
+CMD [./startup.sh]
+
+```
 ---
 
-## Step 3: Modify `buildspec.yml`
+## Step 2: Modify `buildspec.yml`
 
 Update `buildspec.yml` to include the BAF startup and cleanup commands:
 
@@ -198,7 +190,6 @@ The following environment variables must be set in the CodeBuild project:
 
 ## Notes
 
-- The `pse-setup-docker.sh` script detects the package manager (`apt`, `apk`, `dnf`/`yum`) and installs the CA certificate to the correct location automatically.
 - The BAF startup must complete before the `build` phase so that all network traffic during dependency installation is routed correctly.
 - The `ir_proxy` build argument is passed via `--build-arg` in the `docker build` command and used in both build stages of the Dockerfile.
 - The cleanup script in `post_build` should always run, even if the build fails.
