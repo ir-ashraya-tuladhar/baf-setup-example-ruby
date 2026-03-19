@@ -41,15 +41,18 @@ COPY . .
 
 ARG ir_proxy
 
-COPY pse-setup-docker.sh /tmp/pse-setup-docker.sh
-RUN ls /tmp 
-RUN chmod +x pse-setup-docker.sh && ./pse-setup-docker.sh
+ENV http_proxy=${ir_proxy} \
+    https_proxy=${ir_proxy} \
+    HTTP_PROXY=${ir_proxy} \
+    HTTPS_PROXY=${ir_proxy}
 
-ENV http_proxy=${ir_proxy}
-ENV https_proxy=${ir_proxy}
-ENV HTTP_PROXY=${ir_proxy}
-ENV HTTPS_PROXY=${ir_proxy}
-
+RUN if [ -n "${ir_proxy}" ]; then \
+      echo "Value of https_proxy: ${https_proxy}" && \
+      curl -L -k -s -o /tmp/pse.crt https://pse.invisirisk.com/ca && \
+      cp /tmp/pse.crt /usr/local/share/ca-certificates/pse.crt && \
+      echo "CA certificate successfully retrieved and copied to /usr/local/share/ca-certificates/" && \
+      update-ca-certificates; \
+    fi
 
 
 RUN gem install bundler -v 2.4.22
@@ -83,18 +86,6 @@ RUN apt update && apt upgrade -y && apt install -y --no-install-recommends \
     imagemagick \
     libreoffice && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
-
-# Invisirisk PSE proxy setup
-ARG ir_proxy
-
-COPY pse-setup-docker.sh /tmp/pse-setup-docker.sh
-RUN ls /tmp
-RUN chmod +x /tmp/pse-setup-docker.sh && /tmp/pse-setup-docker.sh
-
-ENV http_proxy=${ir_proxy}
-ENV https_proxy=${ir_proxy}
-ENV HTTP_PROXY=${ir_proxy}
-ENV HTTPS_PROXY=${ir_proxy}
 
 # Run and own only the runtime files as a non-root user for security reasons
 RUN adduser --disabled-password $APP_USER
