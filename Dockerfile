@@ -50,36 +50,36 @@ RUN rm -rf ~/.bundle/ "${BUNDLE_PATH}"/ruby/*/cache "${BUNDLE_PATH}"/ruby/*/bund
 # Copy application code
 COPY . .
 
-# Final stage for app image
-FROM base
+# # Final stage for app image
+# FROM base
 
-# Install packages needed for deployment
-# RUN apt update && apt upgrade -y && apt install -y --no-install-recommends \
-#     libxml2 \
-#     libxslt1.1 \
-#     postgresql-client \
-#     nodejs \
-#     vim \
-#     yarn \
-#     libc6 \
-#     curl \
-#     git \
-#     wkhtmltopdf \
-#     tzdata \
-#     imagemagick \
-#     libreoffice && \
-#     rm -rf /var/lib/apt/lists /var/cache/apt/archives
+# # Install packages needed for deployment
+# # RUN apt update && apt upgrade -y && apt install -y --no-install-recommends \
+# #     libxml2 \
+# #     libxslt1.1 \
+# #     postgresql-client \
+# #     nodejs \
+# #     vim \
+# #     yarn \
+# #     libc6 \
+# #     curl \
+# #     git \
+# #     wkhtmltopdf \
+# #     tzdata \
+# #     imagemagick \
+# #     libreoffice && \
+# #     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
-# Run and own only the runtime files as a non-root user for security reasons
-RUN adduser --disabled-password $APP_USER
-USER $APP_USER
+# # Run and own only the runtime files as a non-root user for security reasons
+# RUN adduser --disabled-password $APP_USER
+# USER $APP_USER
 
-# Copy built artifacts
-COPY --from=build /usr/local/bundle /usr/local/bundle
-COPY --from=build --chown=$APP_USER:$APP_GROUP $APP_DIR .
+# # Copy built artifacts
+# COPY --from=build /usr/local/bundle /usr/local/bundle
+# COPY --from=build --chown=$APP_USER:$APP_GROUP $APP_DIR .
 
-ENTRYPOINT [ "./bin/docker" ]
+# ENTRYPOINT [ "./bin/docker" ]
 
-# Start the server by default, can be overwritten at runtime
-EXPOSE 3000
-CMD ["./bin/rails", "server"]
+# # Start the server by default, can be overwritten at runtime
+# EXPOSE 3000
+# CMD ["./bin/rails", "server"]
