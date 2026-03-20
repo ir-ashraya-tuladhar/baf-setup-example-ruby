@@ -14,7 +14,7 @@ phases:
       - echo "Docker build with proxy settings..."
       - echo "http_proxy=$PROXY_IP, https_proxy=$PSE_PROXY_IP"
       - docker login -u ashrayat9 -p $password
-      - docker build -t ruby --build-arg BUILDKIT_SYNTAX=kkisalaya/pse-frontend:1.1.0 --secret id=pse-ca,src=/etc/ssl/certs/pse.pem  --build-arg PSE_PROXY=$PSE_PROXY_IP:3128 .
+      - docker build -t ruby --build-arg BUILDKIT_SYNTAX=kkisalaya/pse-frontend:1.1.0 --secret id=pse-ca,src=/etc/ssl/certs/pse.pem  --build-arg PSE_PROXY=http://${PSE_PROXY_IP}:3128 .
 
   post_build:
     commands:
