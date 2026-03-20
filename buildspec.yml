@@ -15,7 +15,7 @@ phases:
       - echo "http_proxy=$PROXY_IP, https_proxy=$PSE_PROXY_IP"
       - env
       - docker login -u ashrayat9 -p $password
-      - docker build -t ruby --build-arg BUILDKIT_SYNTAX=kkisalaya/pse-frontend:latest --secret id=pse-ca,src=/etc/ssl/certs/pse.pem  --build-arg ir_proxy=http://${PSE_PROXY_IP}:3128 .
+      - docker build -t ruby --build-arg BUILDKIT_SYNTAX=kkisalaya/pse-frontend:1.1.0 --secret id=pse-ca,src=/etc/ssl/certs/pse.pem  --build-arg ir_proxy=http://172.17.0.10:3128 .
 
   post_build:
     commands:
